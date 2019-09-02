@@ -1,0 +1,97 @@
+* 打印对帐单
+*!*	SELECT jck 
+*!*	=cursorsetprop("Buffering",5)
+*!*	=tableupdate(.t.)             && 保存数据
+*!*	COPY all to ..\test.dbf for 库存量 <= 安全库存
+*!*	SELECT 0
+*!*	USE ..\data\ckp.dbf EXCLUSIVE 
+*!*	PACK 
+*!*	COPY all to ..\test.dbf 
+*!*	USE
+
+*----- 
+#INCLUDE Excel8.h
+#DEFINE False .F.
+#DEFINE True .T.
+LOCAL loExcel, lcOldError, lcRange, lnSheets, lnCounter
+
+WAIT WINDOW  "正在收集数据......" NOWAIT NOCLEAR
+
+    SELECT * ;
+        FROM ..\test.dbf ;
+        ORDER BY 序号 ASC ;  &&  ASC  递增排列；  DESCENDING  递减排列
+        INTO CURSOR Output
+
+WAIT WINDOW '正在启动 EXCEL 表格,请稍候......' NOWAIT NOCLEAR 
+
+
+SELECT Output
+GO TOP 	
+
+* 创建EXCEL 对象，添加EXCEL模版
+lcOldError = ON("ERROR")
+ON ERROR loExcel = .NULL.
+loExcel = GetObject(, "Excel.Application")
+ON ERROR &lcOldError
+
+IF ISNULL(loExcel)
+     loExcel = CreateObject( "Excel.Application" )
+ENDIF
+
+loExcel.visible = .F.                                 && 让 EXCEL 可视 / .f. 为不可视
+
+mbwj1 =gcMainPath+ '..\ddwang\EXCEL\POS小票.xlt'
+loExcel.workbooks.add(mbwj1) && 装入模板文件   
+
+*
+WAIT WINDOW "正在写入 EXCEL 电子表格数据,请等候......" NOWAIT NOCLEAR
+
+loExcel.caption = DTOC(DATE())+ '订货明细表'&& EXCEL 标题
+
+WITH loExcel
+
+  WITH .Range("B2")
+	.Value = Alltrim(STR(出入库ID)) 
+  ENDWITH
+
+  WITH .Range("B3")
+	.Value = Dtoc(DATETIME())
+  ENDWITH
+  
+  * 准备写入数据         
+  .Range("A6").Select   &&光标到单元格 A6
+  
+  WAIT WINDOW  "准备写入 EXCEL 单元格数据......" NOWAIT NOCLEAR
+
+     SELECT Output
+     GO TOP
+
+     *-- Populate the report
+     *--
+     *-- Note the use of Cells() in this case instead of Range().
+
+     lnRow = 6  &&从第4行开始写入数据库记录
+     SCAN
+          WAIT WINDOW NOWAIT "数据库记录写入单元格: 记录" + ALLTRIM(STR(RECNO())) + ;
+               " of " + ALLTRIM(STR(RECCOUNT()))
+          *-- Read the record into the cells
+          .Cells(lnRow, 1).Value = ALLTRIM(Output.产品名称)+"   "+ALLTRIM(STR(Output.出库单价,9,2))+"X"+ALLTRIM(STR(Output.出库数量,9,2))
+          .Cells(lnRow, 3).Value = ALLTRIM(STR(Output.出库金额,9,2))    
+               
+          lnRow = lnRow + 1
+     ENDSCAN
+  *  
+  loExcel.visible = .F.                                 && 让 EXCEL 可视 / .f. 为不可视
+  .ActiveWindow.SelectedSheets.PrintOut                 && 打印-
+  ******
+  Release loExcel
+  
+  SELECT test
+  USE
+  
+  * DELETE FILE ..\test.dbf
+  WAIT CLEAR 
+
+  * DO FORM ..\forms\当前库存查询.scx
+  RETURN
+ENDWITH

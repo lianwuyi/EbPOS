@@ -1,0 +1,7 @@
+Class 框架所在文件夹
+otherClass 其它类库所放位置
+Dal DAL层的所有类放在这里
+Bll BLL层的所有类放在这里
+Database 相关设置文件夹
+Prgs 存放PRG程序文件
+Forms 存放表单文件

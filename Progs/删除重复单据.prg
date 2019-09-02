@@ -1,0 +1,27 @@
+CLOSE DATABASES ALL 
+CLOSE TABLES ALL 
+
+SELECT 0
+USE D:\jck.dbf EXCLUSIVE 
+PACK 
+COUNT TO ss
+
+FOR i = 1 TO ss
+   GO i 
+   cx1 = ALLTRIM(STR(出入库id))+ALLTRIM(STR(序号))
+   COUNT TO ss1 FOR ALLTRIM(STR(出入库id))+ALLTRIM(STR(序号)) = cx1
+   IF ss1<>1
+     GO i 
+     DELETE 
+     
+     *DELETE FOR ALLTRIM(STR(出入库id))+ALLTRIM(STR(序号)) = cx1
+   ENDIF 
+   WAIT WINDOW "共"+ALLTRIM(STR(ss))+"条，现"+ALLTRIM(STR(i))
+ENDFOR 
+
+USE
+
+SELECT 0
+USE d:\jck.dbf EXCLUSIVE 
+PACK 
+USE

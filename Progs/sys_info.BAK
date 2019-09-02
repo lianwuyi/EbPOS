@@ -1,0 +1,47 @@
+CLOSE DATABASES ALL 
+CLOSE TABLES ALL 
+
+
+***** 查询数据 *****
+IF FILE(cPATHS+'cp.dbf') = .T.
+SET REPROCESS TO 30  && 尝试锁定的次数为 30次 
+SET EXCLUSIVE OFF 
+SET DELETED ON
+
+  SELECT 0
+  USE cPATHS+'cp.dbf'
+  IF FLOCK()
+    WAIT WINDOW '提示：正在查询数据，请稍候……' NOWAIT NOCLEAR
+    COUNT TO ss
+    USE 
+    WAIT CLEAR 
+    *
+  ELSE 
+    USE 
+    WAIT WINDOW "错误：连接数据库失败！" NOWAIT NOCLEAR
+    RETURN
+  ENDIF 
+  
+ELSE 
+  WAIT WINDOW "错误：找不到数据库文件！" NOWAIT NOCLEAR
+  RETURN 
+ENDIF
+
+
+*-连接数据库----------------------------------------------
+DO con_mssql.prg
+
+DO WHILE .t.&&-------------------
+  ****不重复，就添加数据
+  ln1=SQLExec(lnHandle,"select pr_count from sys_info ") && pr_count放远程数据库产品数量
+  
+  If ln1<=0  && 查询数据不成功，断开所有数据连接
+    WAIT WINDOW"查询远程数据库产品数量数据失败……" NOWAIT NOCLEAR
+    EXIT 
+  ENDIF
+
+  EXIT 
+ENDDO &&----------------------------
+
+SQLDISCONNECT(0) && 断开所有数据连接
+RELEASE lnHandle && 删除连接句柄变量---------------------

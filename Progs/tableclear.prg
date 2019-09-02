@@ -1,0 +1,35 @@
+CLOSE DATABASES ALL 
+CLOSE TABLES ALL 
+
+*** ²úÆ·±í
+SELECT 0
+USE ..\data\cp1.dbf EXCLUSIVE 
+*ZAP
+PACK
+USE
+
+SELECT 0
+USE ..\data\kh1.dbf EXCLUSIVE 
+*ZAP
+PACK
+USE
+
+SELECT 0
+USE ..\data\rk1.dbf EXCLUSIVE 
+ZAP
+USE
+
+SELECT 0
+USE ..\data\ck1.dbf EXCLUSIVE 
+ZAP
+USE 
+
+SELECT 0 
+USE ..\data\jck.dbf EXCLUSIVE 
+ZAP
+USE
+
+SELECT 0 
+USE ..\data\ysk.dbf EXCLUSIVE 
+ZAP
+USE
